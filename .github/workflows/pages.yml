@@ -1,4 +1,4 @@
-name: Deploy AgriBlend to GitHub Pages
+name: AgriBlend
 
 on:
   push:
