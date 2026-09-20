@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriBlend - คำนวณสัดส่วนปุ๋ยสั่งตัด</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header-title h1 {
+            color: #2c7a1c;
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .header-title p {
+            color: #555;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .input-section {
+            background-color: #f9fff6;
+            border: 1px solid #dcedc8;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #33691e;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #c5e1a5;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            border-color: #7cb342;
+            outline: none;
+            box-shadow: 0 0 5px rgba(124, 179, 66, 0.4);
+        }
+
+        button {
+            background: linear-gradient(to right, #558b2f, #7cb342);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 18px;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(85, 139, 47, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #33691e, #558b2f);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            margin-top: 25px;
+            display: none;
+        }
+
+        .result-card {
+            background-color: #fff;
+            border: 2px solid #81c784;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-card.filler {
+            border-color: #ffd54f;
+            background-color: #fffde7;
+        }
+
+        .result-name {
+            font-weight: 600;
+            color: #2e7d32;
+            font-size: 16px;
+        }
+
+        .result-card.filler .result-name {
+            color: #f57f17;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1b5e20;
+        }
+
+        .alert-box {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 5px solid #d32f2f;
+            padding: 10px 15px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* ส่วนแสดงชื่อผู้จัดทำ */
+        .creator-section {
+            margin-top: 35px;
+            background: #263238;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .creator-title {
+            color: #b0bec5;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .creator-names {
+            color: #ffca28;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        
+        .creator-names div {
+            padding: 5px 0;
+            border-bottom: 1px dashed #455a64;
+        }
+        .creator-names div:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">
+        <h1>AgriBlend</h1>
+        <p>เว็บแอปพลิเคชันคำนวณและจัดการสัดส่วนการผสมปุ๋ยสั่งตัด<br>ด้วยอัลกอริทึมเชิงเส้น สำหรับกลุ่มวิสาหกิจชุมชน</p>
+    </div>
+
+    <div class="input-section">
+        <label style="font-size: 16px; margin-bottom: 15px; text-align: center;">ระบุสูตรปุ๋ยที่ต้องการ (N-P-K)</label>
+        <div class="form-row">
+            <div class="input-group">
+                <label for="valN">ไนโตรเจน (N %)</label>
+                <input type="number" id="valN" placeholder="เช่น 15" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="valP">ฟอสฟอรัส (P %)</label>
+                <input type="number" id="valP" placeholder="เช่น 15" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="valK">โพแทสเซียม (K %)</label>
+                <input type="number" id="valK" placeholder="เช่น 15" min="0" max="100">
+            </div>
+        </div>
+        
+        <div class="input-group" style="margin-top: 15px;">
+            <label for="totalWeight">ปริมาณปุ๋ยที่ต้องการผสมรวม (กิโลกรัม)</label>
+            <input type="number" id="totalWeight" placeholder="เช่น 100" value="100" min="1">
+        </div>
+    </div>
+
+    <button onclick="calculateBlend()">คำนวณสัดส่วนปุ๋ย</button>
+
+    <div class="alert-box" id="warningBox"></div>
+
+    <div class="result-section" id="resultSection">
+        <h3 style="color: #2c7a1c; margin-top: 0;">ผลการคำนวณแม่ปุ๋ย (กิโลกรัม)</h3>
+        
+        <div class="result-card">
+            <div class="result-name">ยูเรีย (Urea 46-0-0) <br><small style="color: #666;">แหล่งไนโตรเจน (N)</small></div>
+            <div class="result-value" id="resUrea">0.00 กก.</div>
+        </div>
+        
+        <div class="result-card">
+            <div class="result-name">แดป (DAP 18-46-0) <br><small style="color: #666;">แหล่งฟอสฟอรัส (P)</small></div>
+            <div class="result-value" id="resDap">0.00 กก.</div>
+        </div>
+        
+        <div class="result-card">
+            <div class="result-name">ม็อป (MOP 0-0-60) <br><small style="color: #666;">แหล่งโพแทสเซียม (K)</small></div>
+            <div class="result-value" id="resMop">0.00 กก.</div>
+        </div>
+        
+        <div class="result-card filler">
+            <div class="result-name">สารเติมเต็ม (Filler) <br><small style="color: #8d6e63;">วัสดุเพิ่มน้ำหนัก (เช่น ดิน/ทราย)</small></div>
+            <div class="result-value" id="resFiller">0.00 กก.</div>
+        </div>
+    </div>
+
+    <!-- ส่วนของผู้จัดทำ -->
+    <div class="creator-section">
+        <div class="creator-title">ออกแบบและพัฒนาโดย (ผู้จัดทำ)</div>
+        <div class="creator-names">
+            <div>รัฐภูมิ ทรัพย์มีชัยCE6921</div>
+            <div>ณัฐพงศ์ อนาวงศ์CE6921</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateBlend() {
+        // รับค่าจาก Form
+        const targetN = parseFloat(document.getElementById('valN').value) || 0;
+        const targetP = parseFloat(document.getElementById('valP').value) || 0;
+        const targetK = parseFloat(document.getElementById('valK').value) || 0;
+        const totalWeight = parseFloat(document.getElementById('totalWeight').value) || 0;
+
+        const warningBox = document.getElementById('warningBox');
+        const resultSection = document.getElementById('resultSection');
+
+        warningBox.style.display = "none";
+        warningBox.innerHTML = "";
+
+        if (totalWeight <= 0) {
+            warningBox.innerHTML = "กรุณาระบุน้ำหนักรวมที่ต้องการผสมให้ถูกต้อง";
+            warningBox.style.display = "block";
+            resultSection.style.display = "none";
+            return;
+        }
+
+        // --- อัลกอริทึมเชิงเส้นสำหรับการคำนวณแม่ปุ๋ย ---
+        // ต้องการธาตุอาหารทั้งหมดกี่กิโลกรัม
+        const reqN_kg = (targetN / 100) * totalWeight;
+        const reqP_kg = (targetP / 100) * totalWeight;
+        const reqK_kg = (targetK / 100) * totalWeight;
+
+        // 1. คำนวณ MOP (0-0-60) เพื่อให้ได้ K ตามที่ต้องการ
+        const weightMOP = reqK_kg / 0.60;
+
+        // 2. คำนวณ DAP (18-46-0) เพื่อให้ได้ P ตามที่ต้องการ
+        const weightDAP = reqP_kg / 0.46;
+
+        // หมายเหตุ: DAP (18-46-0) มี N ผสมอยู่ 18% จึงต้องหักลบ N ที่ได้จาก DAP ออกก่อน
+        const nFromDAP = weightDAP * 0.18;
+        const remainingN = reqN_kg - nFromDAP;
+
+        // 3. คำนวณ Urea (46-0-0) เพื่อเติม N ส่วนที่เหลือ
+        let weightUrea = 0;
+        if (remainingN > 0) {
+            weightUrea = remainingN / 0.46;
+        }
+
+        // 4. คำนวณสารเติมเต็ม (Filler)
+        const totalFertilizerWeight = weightMOP + weightDAP + weightUrea;
+        let weightFiller = totalWeight - totalFertilizerWeight;
+
+        // ตรวจสอบความถูกต้องของสูตรปุ๋ย (Constraints)
+        let warnings = [];
+        
+        if (remainingN < -0.1) {
+            warnings.push("สูตรนี้มีสัดส่วน N ต่ำเกินไปเมื่อเทียบกับ P (เนื่องจาก DAP มี N ติดมาด้วย 18%) ทำให้ไม่สามารถผสมให้ตรงสูตรเป๊ะได้");
+        }
+
+        if (weightFiller < -0.1) {
+            warnings.push("สูตรปุ๋ยมีความเข้มข้นสูงเกินไป (Over-grade) ไม่สามารถผสมด้วยแม่ปุ๋ยมาตรฐานได้ น้ำหนักแม่ปุ๋ยทะลุน้ำหนักรวม");
+            weightFiller = 0; // Set to 0 if negative for display purposes
+        }
+
+        if (warnings.length > 0) {
+            warningBox.innerHTML = "<b>ข้อควรระวัง:</b><br> " + warnings.join("<br><br>");
+            warningBox.style.display = "block";
+        }
+
+        // แสดงผล
+        document.getElementById('resUrea').innerText = weightUrea.toFixed(2) + " กก.";
+        document.getElementById('resDap').innerText = weightDAP.toFixed(2) + " กก.";
+        document.getElementById('resMop').innerText = weightMOP.toFixed(2) + " กก.";
+        document.getElementById('resFiller').innerText = weightFiller.toFixed(2) + " กก.";
+
+        resultSection.style.display = "block";
+    }
+</script>
+</body>
+</html>
